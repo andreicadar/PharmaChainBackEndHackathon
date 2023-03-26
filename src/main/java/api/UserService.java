@@ -34,6 +34,10 @@ public class UserService {
         return dataAccessService.getReportsUser(username, medicineName);
     }
 
+    public List<Report> getReportsUerWithoutUsername(String username) throws SQLException {
+        return dataAccessService.getReportsUserWithoutMedicine(username);
+    }
+
     public List<Report> getReportsCompany(String username) throws SQLException {
         return dataAccessService.getReportsCompany(username);
     }

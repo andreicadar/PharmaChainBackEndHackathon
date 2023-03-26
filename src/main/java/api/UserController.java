@@ -118,6 +118,16 @@ public class UserController {
         return userService.getReportsUser(username, medicineName);
     }
 
+    @GetMapping("/getConversationsUser")
+    public List<Report> getReportsUserWithoutMedicine(@RequestHeader("Authorization")String authorization ,@RequestParam(name = "username") String username) throws SQLException {
+        if(username == null)
+        {
+            throw new APIRequestException(HttpStatus.BAD_REQUEST, "User null");
+        }
+        verifyUserFromTokenAndIfLoggedIn(authorization, username);
+        return userService.getReportsUerWithoutUsername(username);
+    }
+
     @GetMapping("/getReportsCompany")
     public List<Report> getReportsCompany(@RequestHeader("Authorization")String authorization ,@RequestParam(name = "companyName") String username) throws SQLException {
         if(username == null)
@@ -130,14 +140,10 @@ public class UserController {
 
     @PostMapping("/postReport")
     public void postReport(@RequestHeader("Authorization")String authorization, @RequestBody ObjectNode objectNode) throws SQLException {
-        if (objectNode.get("date") == null || objectNode.get("date").asText().length() == 0) {
-            System.out.println(objectNode.get("date"));
-            throw new APIRequestException(HttpStatus.BAD_REQUEST, "Date este empty");
-        }
         if (objectNode.get("pharmacyID") == null || objectNode.get("pharmacyID").asText().length() == 0) {
             throw new APIRequestException(HttpStatus.BAD_REQUEST, "PharmacyID este empty");
         }
-        if (objectNode.get("userID") == null || objectNode.get("userID").asText().length() == 0) {
+        if (objectNode.get("username") == null || objectNode.get("username").asText().length() == 0) {
             throw new APIRequestException(HttpStatus.BAD_REQUEST, "UserID este empty");
         }
         if (objectNode.get("status") == null || objectNode.get("status").asText().length() == 0) {
@@ -156,8 +162,8 @@ public class UserController {
         formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime dateTime = LocalDateTime.parse(currentTimeString, formatter);
 
-        verifyUserFromTokenAndIfLoggedIn(authorization, dataAccessService.getUserFromUserID(objectNode.get("userID").asInt()).getUsername());
-        userService.insertReport(dateTime, objectNode.get("pharmacyID").asInt(), objectNode.get("userID").asInt(), Status.valueOf(objectNode.get("status").asText()), objectNode.get("medicineID").asInt());
+        verifyUserFromTokenAndIfLoggedIn(authorization, objectNode.get("username").asText());
+        userService.insertReport(dateTime, objectNode.get("pharmacyID").asInt(), dataAccessService.getUserFromUsername(objectNode.get("username").asText()).getUserID(), Status.valueOf(objectNode.get("status").asText()), objectNode.get("medicineID").asInt());
 
 //        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 //        LocalDateTime dateTime = LocalDateTime.parse(objectNode.get("date").asText(), formatter);
@@ -169,8 +175,11 @@ public class UserController {
     @PostMapping("/updateReport")
     public void updateReport(@RequestHeader("Authorization")String authorization, @RequestBody ObjectNode objectNode) throws SQLException {
 
-        verifyUserFromTokenAndIfLoggedIn(authorization, dataAccessService.getUserFromUserID(objectNode.get("userID").asInt()).getUsername());
-        User user = dataAccessService.getUserCompanyFromUsername(dataAccessService.getUserFromUserID(objectNode.get("userID").asInt()).getUsername());
+        //verifyUserFromTokenAndIfLoggedIn(authorization, dataAccessService.getUserFromUserID(objectNode.get("userID").asInt()).getUsername());
+        verifyUserFromTokenAndIfLoggedIn(authorization, objectNode.get("username").asText());
+
+        //User user = dataAccessService.getUserCompanyFromUsername(dataAccessService.getUserFromUserID(objectNode.get("userID").asInt()).getUsername());
+        User user = dataAccessService.getUserCompanyFromUsername(objectNode.get("username").asText());
         if(user.getCompany() == null)
         {
             throw new APIRequestException(HttpStatus.BAD_REQUEST, "User not company");

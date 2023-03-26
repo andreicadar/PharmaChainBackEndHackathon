@@ -114,6 +114,7 @@ public class DataAccessService {
         queryString.setString(4, status.name());
         queryString.setInt(5, medicineID);
         int rowsAffected = queryString.executeUpdate();
+        System.out.println(rowsAffected);
 
     }
     public void registerUser(String username, String password, String email) throws SQLException {
@@ -195,7 +196,7 @@ public class DataAccessService {
     }
 
     public List<Report> getReportsUser(String username, String medicineName) throws SQLException {
-        PreparedStatement queryString = con.prepareStatement("SELECT * FROM pharmachain.medicine INNER JOIN report ON medicine.idmedicine = report.idmedicine_FKreport INNER JOIN pharmacy ON pharmacy.idpharmacy = report.idpharmacy_FK INNER JOIN company ON company.idcompany = pharmacy.idcompany_FK WHERE medicine.name_medicine = ?");
+        PreparedStatement queryString = con.prepareStatement("SELECT * FROM pharmachain.medicine INNER JOIN report ON medicine.idmedicine = report.idmedicine_FKreport INNER JOIN pharmacy ON pharmacy.idpharmacy = report.idpharmacy_FK INNER JOIN company ON company.idcompany = pharmacy.idcompany_FK WHERE medicine.name_medicine = ? AND report.date > '1951-01-01 01:00:00'");
         queryString.setString(1, medicineName);
         ResultSet resultSet = queryString.executeQuery();
         List<Report> reports = new ArrayList<>();
@@ -206,6 +207,20 @@ public class DataAccessService {
             return null;
         return reports;
     }
+    public List<Report> getReportsUserWithoutMedicine(String username) throws SQLException {
+        int userID = getUserFromUsername(username).getUserID();
+        PreparedStatement queryString = con.prepareStatement("SELECT * FROM pharmachain.medicine INNER JOIN report ON medicine.idmedicine = report.idmedicine_FKreport INNER JOIN pharmacy ON pharmacy.idpharmacy = report.idpharmacy_FK INNER JOIN company ON company.idcompany = pharmacy.idcompany_FK WHERE report.iduser_FK = ? AND report.date > '1951-01-01 01:00:00'");
+        queryString.setInt(1, userID);
+        ResultSet resultSet = queryString.executeQuery();
+        List<Report> reports = new ArrayList<>();
+        while (resultSet.next()) {
+            reports.add(mapReportFromDB(resultSet));
+        }
+        if (reports.size() == 0)
+            return null;
+        return reports;
+    }
+
 
     public void updateReport(int reportID, String status, LocalDateTime currentTime) throws SQLException {
 
