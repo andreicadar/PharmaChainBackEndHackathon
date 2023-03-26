@@ -207,6 +207,21 @@ public class DataAccessService {
         return reports;
     }
 
+    public void updateReport(int reportID, String status, LocalDateTime currentTime) throws SQLException {
+
+        try {
+            PreparedStatement queryString = con.prepareStatement("UPDATE report SET status = ?, date = ? WHERE report.idreport = ?");
+            queryString.setString(1, status);
+            queryString.setString(2, currentTime.toString());
+            queryString.setInt(3, reportID);
+            int rowsUpdated = queryString.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+    }
+
     public List<Report> getReportsCompany(String username) throws SQLException {
 
         User user  = getUserCompanyFromUsername(username);

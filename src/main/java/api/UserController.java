@@ -129,7 +129,7 @@ public class UserController {
     }
 
     @PostMapping("/postReport")
-    public void postReport(@RequestHeader("Authorization")String authorization,@RequestBody ObjectNode objectNode) throws SQLException {
+    public void postReport(@RequestHeader("Authorization")String authorization, @RequestBody ObjectNode objectNode) throws SQLException {
         if (objectNode.get("date") == null || objectNode.get("date").asText().length() == 0) {
             System.out.println(objectNode.get("date"));
             throw new APIRequestException(HttpStatus.BAD_REQUEST, "Date este empty");
@@ -146,10 +146,52 @@ public class UserController {
         if (objectNode.get("medicineID") == null || objectNode.get("medicineID").asText().length() == 0) {
             throw new APIRequestException(HttpStatus.BAD_REQUEST, "MedicineID este empty");
         }
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime dateTime = LocalDateTime.parse(objectNode.get("date").asText(), formatter);
+
+        LocalDateTime currentTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS");
+        currentTime = LocalDateTime.parse(currentTime.toString(), formatter);
+        String currentTimeString = currentTime.toString().replace("T", " ");
+        currentTimeString = currentTimeString.substring(0, currentTimeString.length() - 10);
+        System.out.println(currentTimeString);
+        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime dateTime = LocalDateTime.parse(currentTimeString, formatter);
+
         verifyUserFromTokenAndIfLoggedIn(authorization, dataAccessService.getUserFromUserID(objectNode.get("userID").asInt()).getUsername());
         userService.insertReport(dateTime, objectNode.get("pharmacyID").asInt(), objectNode.get("userID").asInt(), Status.valueOf(objectNode.get("status").asText()), objectNode.get("medicineID").asInt());
+
+//        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+//        LocalDateTime dateTime = LocalDateTime.parse(objectNode.get("date").asText(), formatter);
+//        verifyUserFromTokenAndIfLoggedIn(authorization, dataAccessService.getUserFromUserID(objectNode.get("userID").asInt()).getUsername());
+//        userService.insertReport(dateTime, objectNode.get("pharmacyID").asInt(), objectNode.get("userID").asInt(), Status.valueOf(objectNode.get("status").asText()), objectNode.get("medicineID").asInt());
+
+    }
+
+    @PostMapping("/updateReport")
+    public void updateReport(@RequestHeader("Authorization")String authorization, @RequestBody ObjectNode objectNode) throws SQLException {
+
+        verifyUserFromTokenAndIfLoggedIn(authorization, dataAccessService.getUserFromUserID(objectNode.get("userID").asInt()).getUsername());
+        User user = dataAccessService.getUserCompanyFromUsername(dataAccessService.getUserFromUserID(objectNode.get("userID").asInt()).getUsername());
+        if(user.getCompany() == null)
+        {
+            throw new APIRequestException(HttpStatus.BAD_REQUEST, "User not company");
+        }
+        if (objectNode.get("reportID") == null || objectNode.get("reportID").asText().length() == 0) {
+            throw new APIRequestException(HttpStatus.BAD_REQUEST, "ReportID este empty");
+        }
+        if (objectNode.get("status") == null || objectNode.get("status").asText().length() == 0) {
+            throw new APIRequestException(HttpStatus.BAD_REQUEST, "Status este empty");
+        }
+        LocalDateTime currentTime = LocalDateTime.now();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS");
+        currentTime = LocalDateTime.parse(currentTime.toString(), formatter);
+        String currentTimeString = currentTime.toString().replace("T", " ");
+        currentTimeString = currentTimeString.substring(0, currentTimeString.length() - 10);
+        System.out.println(currentTimeString);
+        formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime dateTime = LocalDateTime.parse(currentTimeString, formatter);
+
+        userService.updateReport(objectNode.get("reportID").asInt(), objectNode.get("status").asText(), dateTime);
+
     }
 
     public void verifyUserFromTokenAndIfLoggedIn(String authorization, String username) {
@@ -164,7 +206,6 @@ public class UserController {
             throw new APIRequestException(HttpStatus.BAD_REQUEST,
                     "Username ul din token este diferit de cel din request");
         }
-
     }
 
 }

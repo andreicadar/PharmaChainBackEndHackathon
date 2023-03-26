@@ -42,4 +42,8 @@ public class UserService {
         dataAccessService.insertReport(date, pharmacyID, userID, status, medicineID);
     }
 
+    public void updateReport(int reportID, String  status, LocalDateTime currentTime) throws  SQLException{
+        dataAccessService.updateReport(reportID, status, currentTime);
+    }
+
 }
