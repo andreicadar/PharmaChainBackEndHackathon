@@ -1,0 +1,16 @@
+<component name="InspectionProjectProfileManager">
+  <profile version="1.0">
+    <option name="myName" value="Project Default" />
+    <inspection_tool class="MavenPackageUpdate" enabled="true" level="WEAK WARNING" enabled_by_default="true">
+      <option name="excludeList">
+        <list>
+          <option value="org.projectlombok:lombok" />
+          <option value="org.webjars:bootstrap" />
+          <option value="org.webjars:jquery" />
+          <option value="org.webjars:sockjs-client" />
+          <option value="org.webjars:stomp-websocket" />
+        </list>
+      </option>
+    </inspection_tool>
+  </profile>
+</component>
